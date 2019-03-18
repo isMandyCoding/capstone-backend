@@ -6,11 +6,13 @@ import (
 
 type Opportunity struct {
 	gorm.Model
-	StartTime       string `gorm:"type:varchar(255);column:start_time"`
-	EndTime         string `gorm:"type:varchar(255);column:end_time"`
-	Label           string `gorm:"type:varchar(255);column:label"`
-	Tags            string `gorm:"type:varchar(255);column:tags"`
-	Description     string `gorm:"type:varchar(1000);column:label"`
-	Location        string `gorm:"type:varchar(255);column:location"`
-	NumOfVolunteers int    `gorm:"type:integer;column:num_of_volunteers"`
+	NPOID           uint
+	StartTime       string `gorm:"type:varchar(255)"`
+	EndTime         string `gorm:"type:varchar(255)"`
+	Label           string `gorm:"type:varchar(255)"`
+	Tags            string `gorm:"type:varchar(255)"`
+	Description     string `gorm:"type:varchar(1000)"`
+	Location        string `gorm:"type:varchar(255)"`
+	NumOfVolunteers int    `gorm:"type:integer"`
+	Fulfillers      []Fulfiller
 }
