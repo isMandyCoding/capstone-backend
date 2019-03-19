@@ -1,4 +1,4 @@
-package z
+package controllers
 
 import (
 	"github.com/kataras/iris"
@@ -30,13 +30,15 @@ func ShowNPO(ctx iris.Context) {
 	defer db.Close()
 
 	// Create container for one user
-	var npo []types.NPO
+	var npo types.NPO
 
 	// Acquire the id via the url params
 	urlParam, _ := ctx.Params().GetInt("id")
 
 	// Query database for user with a certain ID
 	db.First(&npo, urlParam)
+
+	db.Model(&npo).Related(&npo.Opportunitys)
 
 	ctx.JSON(npo)
 }
@@ -64,12 +66,7 @@ func CreateNPO(ctx iris.Context) {
 	db.Create(&npo)
 
 	if db.NewRecord(npo) == false {
-
-		var newNPO types.NPO
-
-		db.Where("email = ?", npo.Email).Find(&newNPO)
-
-		ctx.JSON(newNPO)
+		ctx.JSON(npo)
 	} else {
 	}
 
@@ -102,7 +99,7 @@ func UpdateNPO(ctx iris.Context) {
 		Password:    requestBody.Password,
 	})
 
-	var updatedNPO []types.NPO
+	var updatedNPO types.NPO
 
 	db.First(&updatedNPO, urlParam)
 
@@ -121,15 +118,7 @@ func DeleteNPO(ctx iris.Context) {
 
 	db.First(&npo, urlParam)
 
-	var deletedNPO types.NPO
-
 	db.Unscoped().Delete(&npo)
-
-	db.First(&deletedNPO, urlParam)
-
-	// if len(deletedNPO) == 0 {
-
-	ctx.JSON(deletedNPO)
-	// }
+	ctx.JSON(npo)
 
 }
