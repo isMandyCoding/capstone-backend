@@ -8,7 +8,7 @@ import (
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/middleware/logger"
 	"github.com/kataras/iris/middleware/recover"
-	"github.com/theycallmethetailor/capstone-backend/controllers"
+	controllers "github.com/theycallmethetailor/capstone-backend/controllers"
 
 	types "github.com/theycallmethetailor/capstone-backend/models"
 
@@ -29,6 +29,10 @@ func main() {
 	fmt.Println("Works")
 
 	app.Get("/api/npos", controllers.GetAllNPOs)
+	app.Get("/api/npos/{id:int}", controllers.ShowNPO)
+	app.Post("api/npos", controllers.CreateNPO)
+	app.Put("/api/npos/{id:int}", controllers.UpdateNPO)
+	app.Delete("api/npos/{id:int}", controllers.DeleteNPO)
 
 	app.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }

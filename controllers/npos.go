@@ -1,4 +1,4 @@
-package controllers
+package z
 
 import (
 	"github.com/kataras/iris"
@@ -20,4 +20,116 @@ func GetAllNPOs(ctx iris.Context) {
 
 	// Respond to request with JSON of all the users
 	ctx.JSON(npos)
+}
+
+func ShowNPO(ctx iris.Context) {
+
+	// Create connection to database
+	db, _ := databaseConfig.DbStart()
+	// Close connection when function is done running
+	defer db.Close()
+
+	// Create container for one user
+	var npo []types.NPO
+
+	// Acquire the id via the url params
+	urlParam, _ := ctx.Params().GetInt("id")
+
+	// Query database for user with a certain ID
+	db.First(&npo, urlParam)
+
+	ctx.JSON(npo)
+}
+
+func CreateNPO(ctx iris.Context) {
+	db, _ := databaseConfig.DbStart()
+
+	defer db.Close()
+
+	var requestBody types.NPO
+
+	ctx.ReadJSON(&requestBody)
+
+	npo := types.NPO{
+		NPOName:     requestBody.NPOName,
+		Description: requestBody.Description,
+		Website:     requestBody.Website,
+		Email:       requestBody.Email,
+		FirstName:   requestBody.FirstName,
+		LastName:    requestBody.LastName,
+		Password:    requestBody.Password,
+	}
+
+	db.NewRecord(npo)
+	db.Create(&npo)
+
+	if db.NewRecord(npo) == false {
+
+		var newNPO types.NPO
+
+		db.Where("email = ?", npo.Email).Find(&newNPO)
+
+		ctx.JSON(newNPO)
+	} else {
+	}
+
+}
+
+func UpdateNPO(ctx iris.Context) {
+
+	db, _ := databaseConfig.DbStart()
+
+	defer db.Close()
+
+	var npo types.NPO
+
+	urlParam, _ := ctx.Params().GetInt("id")
+
+	db.First(&npo, urlParam)
+
+	var requestBody types.NPO
+
+	ctx.ReadJSON(&requestBody)
+
+	// Update multiple attributes with `struct`, will only update those changed & non blank fields
+	db.Model(&npo).Updates(types.NPO{
+		NPOName:     requestBody.NPOName,
+		Description: requestBody.Description,
+		Website:     requestBody.Website,
+		Email:       requestBody.Email,
+		FirstName:   requestBody.FirstName,
+		LastName:    requestBody.LastName,
+		Password:    requestBody.Password,
+	})
+
+	var updatedNPO []types.NPO
+
+	db.First(&updatedNPO, urlParam)
+
+	ctx.JSON(updatedNPO)
+
+}
+
+func DeleteNPO(ctx iris.Context) {
+
+	//connect to database at start, close db at end of func
+	db, _ := databaseConfig.DbStart()
+	defer db.Close()
+
+	var npo types.NPO
+	urlParam, _ := ctx.Params().GetInt("id")
+
+	db.First(&npo, urlParam)
+
+	var deletedNPO types.NPO
+
+	db.Unscoped().Delete(&npo)
+
+	db.First(&deletedNPO, urlParam)
+
+	// if len(deletedNPO) == 0 {
+
+	ctx.JSON(deletedNPO)
+	// }
+
 }
