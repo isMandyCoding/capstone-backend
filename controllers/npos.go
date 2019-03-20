@@ -38,7 +38,7 @@ func ShowNPO(ctx iris.Context) {
 	// Query database for user with a certain ID
 	db.First(&npo, urlParam)
 
-	db.Model(&npo).Related(&npo.Opportunitys)
+	db.Model(&npo).Related(&npo.Events)
 
 	ctx.JSON(npo)
 }

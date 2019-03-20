@@ -22,9 +22,20 @@ func main() {
 	app.Use(recover.New())
 	app.Use(logger.New())
 
+	app.OnErrorCode(iris.StatusInternalServerError, func(ctx iris.Context) {
+		type Message struct {
+			Message string
+		}
+
+		var errorMessage Message
+
+		errorMessage.Message = ctx.Values().GetString("message")
+		ctx.JSON(errorMessage)
+	})
+
 	db, _ := databaseConfig.DbStart()
 
-	db.AutoMigrate(&types.NPO{}, &types.Volunteer{}, &types.Opportunity{}, &types.Fulfiller{})
+	db.AutoMigrate(&types.NPO{}, &types.Volunteer{}, &types.Event{}, &types.Shift{})
 
 	fmt.Println("Works")
 
@@ -42,20 +53,11 @@ func main() {
 	app.Put("/api/volunteers/{id:int}", controllers.UpdateVolunteer)
 	app.Delete("/api/volunteers/{id:int}", controllers.DeleteVolunteer)
 
-	//Opportunities Routes:
-	app.Get("/api/opportunities", controllers.GetAllOpportunities)
-	app.Get("/api/opportunities/{id:int}", controllers.ShowOpportunity)
-	app.Post("api/opportunities", controllers.CreateOpportunity)
-	app.Delete("/api/opportunities/{id:int}", controllers.DeleteOpportunity)
-
-	//Fulfillers Routes:
-	app.Get("/api/fulfillers/opportunty/{oppid:int}", controllers.GetOppFulfillers) //get by opp id
-	app.Get("/api/fulfullers/volunteer/{volid:int}", controllers.GetVolFulfillers) //get by vol id
-	app.Get("/api/fulfillers", controllers.GetAllFulfillers)
-	app.Get("/api/fulfillers/{id:int}", controllers.ShowFulfiller)
-	app.Post("/api/fulfillers", controllers.CreateFulfiller)
-	app.Put("api/fulfillers/{id:int}", controllers.UpdateFulfiller)
-	app.Delete("/api/fulfillers/{id:int}", controllers.DeleteFulfiller)
+	//Events Routes:
+	app.Get("/api/events", controllers.GetAllEvents)
+	app.Get("/api/events/{id:int}", controllers.ShowEvent)
+	app.Post("/api/events", controllers.CreateEvent)
+	app.Put("/api/events/{id:int}", controllers.UpdateEvent)
 
 	app.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }
