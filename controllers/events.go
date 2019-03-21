@@ -39,6 +39,32 @@ func ShowEvent(ctx iris.Context) {
 	ctx.JSON(event)
 }
 
+func GetOpenEvents(ctx iris.Context) {
+	db, _ := databaseConfig.DbStart()
+
+	defer db.Close()
+
+	var events []types.Event
+
+	//Find events where the number of shifts whose volunteer_id is not 0
+	//is equal to the num_of_volunteers on the events.
+	db.Find(&events)
+
+	var openEvents []types.Event
+
+	for _, event := range events {
+
+		var filledShifts []types.Shift
+		db.Table("shifts").Where("event_id = ?", event.ID).Not("volunteer_id", 0).Find(&filledShifts)
+
+		if len(filledShifts) != event.NumOfVolunteers {
+			openEvents = append(openEvents, event)
+		}
+	}
+
+	ctx.JSON(openEvents)
+}
+
 func CreateEvent(ctx iris.Context) {
 
 	db, _ := databaseConfig.DbStart()
