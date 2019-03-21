@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"time"
+
 	"github.com/kataras/iris"
 	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
 	types "github.com/theycallmethetailor/capstone-backend/models"
@@ -22,32 +24,63 @@ func GetAllNPOs(ctx iris.Context) {
 	ctx.JSON(npos)
 }
 
-// func GetVolunteerHours(ctx iris.Context) {
-// 	db, _ := databaseConfig.DbStart()
+func GetVolunteerHours(ctx iris.Context) {
+	db, _ := databaseConfig.DbStart()
 
-// 	defer db.Close()
+	defer db.Close()
 
-// 	type Shift struct {
-// 		ShiftID         uint
-// 		EventID         uint
-// 		EventName       string
-// 		WasWorked       bool
-// 		ActualStartTime int64
-// 		ActualEndTime   int64
-// 	}
+	type Shift struct {
+		ShiftID         uint
+		EventID         uint
+		EventName       string
+		WasWorked       bool
+		ActualStartTime int64
+		ActualEndTime   int64
+	}
 
-// 	type VolunteerHours struct {
-// 		VolunteerID uint
-// 		Username    string
-// 		FirstName   string
-// 		LastName    string
-// 		Shifts      []Shift
-// 	}
+	type VolunteerHours struct {
+		VolunteerID uint
+		Username    string
+		FirstName   string
+		LastName    string
+		Shifts      []Shift
+	}
 
-// 	//get the query params
-// 	queryParams, err := ctx.Params().urlParamInt64()
+	//get the startDate in Epoch time from the query params
+	startDate, err := ctx.URLParamInt("startDate")
 
-// }
+	if err != nil {
+		ctx.Values().Set("message", "Please provide a valid start date for your request.")
+		ctx.StatusCode(500)
+	}
+	//get the startDate in Epoch time from the query params
+	endDate, err := ctx.URLParamInt("endDate")
+
+	if err != nil {
+		ctx.Values().Set("message", "Please provide a valid end date for your request.")
+		ctx.StatusCode(500)
+	}
+	//get NPOID from query params
+	npoID, err := ctx.URLParamInt("npoid")
+	if err != nil {
+		ctx.Values().Set("message", "Please provide a valid NPO ID for your request.")
+		ctx.StatusCode(500)
+	}
+
+	now := time.Now().Unix()
+
+	if startDate > int(now) {
+		ctx.Values().Set("message", "Unable to provide report for future date span.")
+		ctx.StatusCode(500)
+	}
+
+	var events []types.Event
+
+	db.Table("events").Where("npoid = ? AND start_time >= ? AND start_time <= ?", npoID, startDate, endDate).Find(&events)
+
+	ctx.JSON(events)
+
+}
 
 func ShowNPO(ctx iris.Context) {
 

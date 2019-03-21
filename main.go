@@ -33,6 +33,8 @@ func main() {
 		ctx.JSON(errorMessage)
 	})
 
+	app.OnErrorCode(iris.StatusNotFound, controllers.NotFound)
+
 	db, _ := databaseConfig.DbStart()
 
 	db.AutoMigrate(&types.NPO{}, &types.Volunteer{}, &types.Event{}, &types.Shift{})
@@ -41,7 +43,7 @@ func main() {
 
 	// NPO Routes:
 	app.Get("/api/npos", controllers.GetAllNPOs)
-	// app.Post("apis/npos/volunteers/hours", controllers.GetVolunteerHours)
+	app.Post("apis/npos/volunteers/hours", controllers.GetVolunteerHours)
 	app.Get("/api/npos/{id:int}", controllers.ShowNPO)
 	app.Post("api/npos", controllers.CreateNPO)
 	app.Put("/api/npos/{id:int}", controllers.UpdateNPO)
