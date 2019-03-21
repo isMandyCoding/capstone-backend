@@ -61,6 +61,7 @@ func main() {
 
 	//Shifts Routes
 	app.Put("/api/shifts/{id:int}", controllers.VolunteerSignup)
+	app.Get("/api/shifts/volunteers/{id:int}", controllers.GetVolunteerShifts)
 
 	app.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }

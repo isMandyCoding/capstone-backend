@@ -25,11 +25,13 @@ func ShowVolunteer(ctx iris.Context) {
 
 	defer db.Close()
 
-	var volunteer []types.Volunteer
+	var volunteer types.Volunteer
 
 	urlParam, _ := ctx.Params().GetInt("id")
 
 	db.First(&volunteer, urlParam)
+
+	db.Model(&volunteer).Related(&volunteer.Shifts)
 
 	ctx.JSON(volunteer)
 }
@@ -92,7 +94,6 @@ func UpdateVolunteer(ctx iris.Context) {
 		LastName:  requestBody.LastName,
 		Password:  requestBody.Password,
 	})
-
 
 	ctx.JSON(volunteer)
 }
