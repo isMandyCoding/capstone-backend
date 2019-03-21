@@ -22,6 +22,33 @@ func GetAllNPOs(ctx iris.Context) {
 	ctx.JSON(npos)
 }
 
+// func GetVolunteerHours(ctx iris.Context) {
+// 	db, _ := databaseConfig.DbStart()
+
+// 	defer db.Close()
+
+// 	type Shift struct {
+// 		ShiftID         uint
+// 		EventID         uint
+// 		EventName       string
+// 		WasWorked       bool
+// 		ActualStartTime int64
+// 		ActualEndTime   int64
+// 	}
+
+// 	type VolunteerHours struct {
+// 		VolunteerID uint
+// 		Username    string
+// 		FirstName   string
+// 		LastName    string
+// 		Shifts      []Shift
+// 	}
+
+// 	//get the query params
+// 	queryParams, err := ctx.Params().urlParamInt64()
+
+// }
+
 func ShowNPO(ctx iris.Context) {
 
 	// Create connection to database

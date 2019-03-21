@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+
 	"github.com/kataras/iris"
 	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
 	types "github.com/theycallmethetailor/capstone-backend/models"
@@ -19,12 +21,13 @@ func VolunteerSignup(ctx iris.Context) {
 	urlParam, _ := ctx.Params().GetInt("shiftid")
 	db.First(&shift, urlParam)
 
+	fmt.Print(shift)
+
 	type ShiftVolunteer struct {
 		VolunteerID uint
 	}
 	var shiftVol ShiftVolunteer
 	ctx.ReadJSON(&shiftVol)
-
 	//check to make sure volunteer hasn't already signed up for a shift for the same event
 
 	var checkShift []types.Shift
@@ -40,9 +43,8 @@ func VolunteerSignup(ctx iris.Context) {
 
 			var updatedShift types.Shift
 			db.First(&updatedShift, urlParam)
-			db.Model(&updatedShift).Updates(types.Shift{
-				VolunteerID: shiftVol.VolunteerID,
-			})
+			updatedShift.VolunteerID = shiftVol.VolunteerID
+			db.Save(updatedShift)
 			ctx.JSON(updatedShift)
 
 		} else {
