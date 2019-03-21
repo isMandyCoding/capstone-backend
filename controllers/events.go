@@ -46,12 +46,14 @@ func GetOpenEvents(ctx iris.Context) {
 
 	var events []types.Event
 
-	//Find events where the number of shifts whose volunteer_id is not 0
-	//is equal to the num_of_volunteers on the events.
-	db.Find(&events)
+	//Find events that haven't already started.
+	now := time.Now().Unix()
+
+	db.Table("events").Where("start_time > ?", now).Select("id, created_at, updated_at, deleted_at, npo_id, name, start_time, end_time, tags, description, location, num_of_volunteers").Find(&events)
 
 	var openEvents []types.Event
 
+	//look for only events that that still have open shifts to fill
 	for _, event := range events {
 
 		var filledShifts []types.Shift
