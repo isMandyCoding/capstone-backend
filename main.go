@@ -60,7 +60,8 @@ func main() {
 	app.Put("/api/events/{id:int}", controllers.UpdateEvent)
 
 	//Shifts Routes
-	app.Put("/api/shifts/{id:int}", controllers.VolunteerSignup)
+	app.Put("/api/shifts/{shiftid:int}", controllers.VolunteerSignup)
+	app.Put("/api/shifts/cancel/{shiftid:int}", controllers.VolunteerCancel)
 	app.Get("/api/shifts/volunteers/{id:int}", controllers.GetVolunteerShifts)
 
 	app.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))

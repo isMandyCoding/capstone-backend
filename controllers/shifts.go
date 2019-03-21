@@ -16,8 +16,9 @@ func VolunteerSignup(ctx iris.Context) {
 
 	defer db.Close()
 	var shift types.Shift
-	urlParam, _ := ctx.Params().GetInt("id")
+	urlParam, _ := ctx.Params().GetInt("shiftid")
 	db.First(&shift, urlParam)
+
 	type ShiftVolunteer struct {
 		VolunteerID uint
 	}
@@ -55,6 +56,32 @@ func VolunteerSignup(ctx iris.Context) {
 		ctx.Values().Set("message", "You've already signed up for this event. Unable to sign up for another shift for same event.")
 		ctx.StatusCode(500)
 	}
+}
+
+func VolunteerCancel(ctx iris.Context) {
+	db, err := databaseConfig.DbStart()
+
+	defer db.Close()
+
+	if err != nil {
+		ctx.Values().Set("message", "Unable to update shift as requested. Please try again.")
+		ctx.StatusCode(500)
+	}
+
+	defer db.Close()
+	var shift types.Shift
+	urlParam, _ := ctx.Params().GetInt("shiftid")
+	db.First(&shift, urlParam)
+
+	//double check to make sure the correct volunteer is being removed
+	if int(shift.VolunteerID) == urlParam {
+
+		shift.VolunteerID = 0
+		db.Save(&shift)
+
+		ctx.JSON(shift)
+	}
+
 }
 
 func GetVolunteerShifts(ctx iris.Context) {
