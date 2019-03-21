@@ -25,18 +25,41 @@ func VolunteerSignup(ctx iris.Context) {
 	type ShiftVolunteer struct {
 		VolunteerID uint
 	}
-
 	var shiftVol ShiftVolunteer
 
 	ctx.ReadJSON(&shiftVol)
 
-	var updatedShift types.Shift
+	//check to make sure volunteer hasn't already signed up for a shift for the same event
 
-	db.First(&updatedShift, urlParam)
+	var checkShift []types.Shift
 
-	db.Model(&updatedShift).Updates(types.Shift{
-		VolunteerID: shiftVol.VolunteerID,
-	})
+	signup := db.Find(&checkShift, "event_id = ? AND volunteer_id = ?", shift.EventID, shiftVol.VolunteerID)
 
-	ctx.JSON(updatedShift)
+	if signup.RowsAffected == 0 {
+
+		//check to make sure whey don't have any existing shifts during the same time
+		var priorObligations []types.Shift
+
+		obligations := db.Find(&priorObligations, "volunteer_id = ? AND actual_start_time <= ? AND actual_end_time >= ?", shiftVol.VolunteerID, shift.ActualStartTime, shift.ActualStartTime)
+
+		if obligations.RowsAffected == 0 {
+
+			var updatedShift types.Shift
+
+			db.First(&updatedShift, urlParam)
+
+			db.Model(&updatedShift).Updates(types.Shift{
+				VolunteerID: shiftVol.VolunteerID,
+			})
+
+			ctx.JSON(updatedShift)
+		} else {
+			ctx.Values().Set("message", "You've already signed up for another event during the same time.")
+			ctx.StatusCode(500)
+		}
+
+	} else {
+		ctx.Values().Set("message", "You've already signed up for this event. Unable to sign up for another shift for same event.")
+		ctx.StatusCode(500)
+	}
 }
