@@ -59,5 +59,8 @@ func main() {
 	app.Post("/api/events", controllers.CreateEvent)
 	app.Put("/api/events/{id:int}", controllers.UpdateEvent)
 
+	//Shifts Routes
+	app.Put("/api/shifts/{id:int}", controllers.VolunteerSignup)
+
 	app.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
 }
