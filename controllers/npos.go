@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/kataras/iris"
@@ -29,21 +30,22 @@ func GetVolunteerHours(ctx iris.Context) {
 
 	defer db.Close()
 
-	type Shift struct {
+	type TrackShift struct {
 		ShiftID         uint
 		EventID         uint
 		EventName       string
 		WasWorked       bool
 		ActualStartTime int64
 		ActualEndTime   int64
+		VolunteerID     uint
+		Username        string
+		FirstName       string
+		LastName        string
 	}
 
 	type VolunteerHours struct {
-		VolunteerID uint
-		Username    string
-		FirstName   string
-		LastName    string
-		Shifts      []Shift
+		Shifts     []TrackShift
+		TotalHours int
 	}
 
 	//get the startDate in Epoch time from the query params
@@ -76,9 +78,58 @@ func GetVolunteerHours(ctx iris.Context) {
 
 	var events []types.Event
 
-	db.Table("events").Where("npoid = ? AND start_time >= ? AND start_time <= ?", npoID, startDate, endDate).Find(&events)
+	//a shift will be included on this report even if the end time exceeds the endDate.
+	//This report won't include events that started before the startDate at midnight
+	//This should prevent double counting of the same events.
+	db.Table("events").Where("npo_id = ? AND start_time >= ? AND start_time <= ?", npoID, startDate, endDate).Find(&events)
 
-	ctx.JSON(events)
+	//this is going to be used to gather all the shifts with all the volunteer and event information on them.
+	var shifts []TrackShift
+
+	for _, event := range events {
+
+		var eventShifts []types.Shift
+
+		db.Table("shifts").Where("event_id = ?", event.ID).Find(&eventShifts)
+
+		for _, shift := range eventShifts {
+
+			something := true
+
+			// if shift.WasWorked == true {
+			var volunteer types.Volunteer
+			if something {
+
+				fmt.Print(shift)
+				ctx.JSON(shift)
+			}
+
+			something = false
+
+			db.First(&volunteer, shift.VolunteerID)
+
+			npoShift := TrackShift{
+				ShiftID:         shift.ID,
+				EventID:         shift.EventID,
+				EventName:       event.Name,
+				WasWorked:       shift.WasWorked,
+				VolunteerID:     shift.VolunteerID,
+				ActualStartTime: shift.ActualStartTime,
+				ActualEndTime:   shift.ActualEndTime,
+				Username:        volunteer.Username,
+				FirstName:       volunteer.FirstName,
+				LastName:        volunteer.LastName,
+			}
+
+			shifts = append(shifts, npoShift)
+
+			// }
+
+		}
+
+	}
+
+	ctx.JSON(shifts)
 
 }
 
@@ -128,6 +179,8 @@ func CreateNPO(ctx iris.Context) {
 	if db.NewRecord(npo) == false {
 		ctx.JSON(npo)
 	} else {
+		ctx.Values().Set("message", "Error creating new NPO. Please try again.")
+		ctx.StatusCode(500)
 	}
 
 }

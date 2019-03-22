@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/rs/cors"
+
 	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
 
 	"github.com/kataras/iris"
@@ -17,6 +19,13 @@ import (
 
 func main() {
 	app := iris.New()
+
+	// Add CORS to application
+	app.WrapRouter(cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: true,
+	}).ServeHTTP)
 
 	app.Logger().SetLevel("debug")
 	app.Use(recover.New())
@@ -43,7 +52,7 @@ func main() {
 
 	// NPO Routes:
 	app.Get("/api/npos", controllers.GetAllNPOs)
-	app.Post("apis/npos/volunteers/hours", controllers.GetVolunteerHours)
+	app.Get("apis/npos/volunteers/hours", controllers.GetVolunteerHours)
 	app.Get("/api/npos/{id:int}", controllers.ShowNPO)
 	app.Post("api/npos", controllers.CreateNPO)
 	app.Put("/api/npos/{id:int}", controllers.UpdateNPO)
@@ -68,5 +77,5 @@ func main() {
 	app.Put("/api/shifts/cancel/{shiftid:int}", controllers.VolunteerCancel)
 	app.Get("/api/shifts/volunteers/{id:int}", controllers.GetVolunteerShifts)
 
-	app.Run(iris.Addr(":8080"), iris.WithoutServerError(iris.ErrServerClosed))
+	app.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
 }
