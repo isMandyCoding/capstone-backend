@@ -60,13 +60,10 @@ func CreateVolunteer(ctx iris.Context) {
 	db.Create(&volunteer)
 
 	if db.NewRecord(volunteer) == false {
-		var newVolunteer types.Volunteer
-
-		db.Where("email = ?", volunteer.Email).Find(&newVolunteer)
-
-		ctx.JSON(newVolunteer)
+		ctx.JSON(volunteer)
 	} else {
-
+		ctx.Values().Set("message", "Unable to create new volunteer. Please try again.")
+		ctx.StatusCode(500)
 	}
 
 }
