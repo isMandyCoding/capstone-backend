@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/kataras/iris"
 	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
@@ -33,7 +34,64 @@ func ShowVolunteer(ctx iris.Context) {
 
 	db.Model(&volunteer).Related(&volunteer.Shifts)
 
-	ctx.JSON(volunteer)
+	type ReturnShift struct {
+		ID               uint
+		CreatedAt        time.Time
+		UpdatedAt        time.Time
+		VolunteerID      uint
+		EventID          uint
+		WasWorked        bool
+		ActualStartTime  int64
+		ActualEndTime    int64
+		NPOName          string
+		EventName        string
+		EventDescription string
+		EventLocation    string
+		NumOfVolunteers  int
+	}
+
+	type ReturnVolunteer struct {
+		Username  string
+		Bio       string
+		Email     string
+		FirstName string
+		LastName  string
+		Shifts    []ReturnShift
+	}
+
+	returnVolunteer := ReturnVolunteer{
+		Username:  volunteer.Username,
+		Bio:       volunteer.Bio,
+		Email:     volunteer.Email,
+		FirstName: volunteer.FirstName,
+		LastName:  volunteer.LastName,
+	}
+
+	for _, shift := range volunteer.Shifts {
+		var eventInfo types.Event
+		db.First(&eventInfo, shift.EventID)
+		var npoInfo types.NPO
+		db.First(&npoInfo, eventInfo.NPOID)
+		fmt.Print(npoInfo)
+		returnShift := ReturnShift{
+			ID:               shift.ID,
+			CreatedAt:        shift.CreatedAt,
+			UpdatedAt:        shift.UpdatedAt,
+			VolunteerID:      shift.VolunteerID,
+			EventID:          shift.EventID,
+			WasWorked:        shift.WasWorked,
+			ActualStartTime:  shift.ActualStartTime,
+			ActualEndTime:    shift.ActualEndTime,
+			NPOName:          npoInfo.NPOName,
+			EventName:        eventInfo.Name,
+			EventDescription: eventInfo.Description,
+			EventLocation:    eventInfo.Location,
+			NumOfVolunteers:  eventInfo.NumOfVolunteers,
+		}
+		returnVolunteer.Shifts = append(returnVolunteer.Shifts, returnShift)
+	}
+
+	ctx.JSON(returnVolunteer)
 }
 
 func CreateVolunteer(ctx iris.Context) {

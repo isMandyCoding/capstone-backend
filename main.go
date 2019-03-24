@@ -53,14 +53,14 @@ func main() {
 	// NPO Routes:
 	app.Get("/api/npos", controllers.GetAllNPOs)
 	app.Get("apis/npos/volunteers/hours", controllers.GetVolunteerHours)
-	app.Get("/api/npos/{id:int}", controllers.ShowNPO)
+	app.Get("/api/npo/{id:int}", controllers.ShowNPO)
 	app.Post("api/npos", controllers.CreateNPO)
 	app.Put("/api/npos/{id:int}", controllers.UpdateNPO)
 	app.Delete("api/npos/{id:int}", controllers.DeleteNPO)
 
 	//Volunteers Routes:
 	app.Get("/api/volunteers", controllers.GetAllVolunteers)
-	app.Get("/api/volunteers/{id:int}", controllers.ShowVolunteer)
+	app.Get("/api/volunteer/{id:int}", controllers.ShowVolunteer)
 	app.Post("/api/volunteers", controllers.CreateVolunteer)
 	app.Put("/api/volunteers/{id:int}", controllers.UpdateVolunteer)
 	app.Delete("/api/volunteers/{id:int}", controllers.DeleteVolunteer)

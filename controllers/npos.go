@@ -149,6 +149,11 @@ func ShowNPO(ctx iris.Context) {
 	// Query database for user with a certain ID
 	db.First(&npo, urlParam)
 
+	if npo.ID == 0 {
+		ctx.Values().Set("message", "Unable to locate NPO with the provided ID.")
+		ctx.StatusCode(500)
+	}
+
 	db.Model(&npo).Related(&npo.Events)
 
 	ctx.JSON(npo)
