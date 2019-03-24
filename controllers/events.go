@@ -51,7 +51,22 @@ func GetOpenEvents(ctx iris.Context) {
 
 	db.Table("events").Where("start_time > ?", now).Select("id, created_at, updated_at, deleted_at, npo_id, name, start_time, end_time, tags, description, location, num_of_volunteers").Find(&events)
 
-	var openEvents []types.Event
+	type ReturnEvent struct {
+		ID              uint
+		CreatedAt       time.Time
+		UpdatedAt       time.Time
+		NPOID           int
+		NPOName         string
+		Name            string
+		StartTime       int64
+		EndTime         int64
+		Tags            string
+		Description     string
+		Location        string
+		NumOfVolunteers int
+	}
+
+	var openEvents []ReturnEvent
 
 	//look for only events that that still have open shifts to fill
 	for _, event := range events {
@@ -60,7 +75,24 @@ func GetOpenEvents(ctx iris.Context) {
 		db.Table("shifts").Where("event_id = ?", event.ID).Not("volunteer_id", 0).Find(&filledShifts)
 
 		if len(filledShifts) != event.NumOfVolunteers {
-			openEvents = append(openEvents, event)
+			var npoInfo types.NPO
+			db.Select("npo_name").First(&npoInfo, event.NPOID)
+
+			returnEvent := ReturnEvent{
+				ID:              event.ID,
+				CreatedAt:       event.CreatedAt,
+				UpdatedAt:       event.UpdatedAt,
+				NPOID:           event.NPOID,
+				NPOName:         npoInfo.NPOName,
+				Name:            event.Name,
+				StartTime:       event.StartTime,
+				EndTime:         event.EndTime,
+				Tags:            event.Tags,
+				Description:     event.Description,
+				Location:        event.Location,
+				NumOfVolunteers: event.NumOfVolunteers,
+			}
+			openEvents = append(openEvents, returnEvent)
 		}
 	}
 

@@ -48,9 +48,11 @@ func ShowVolunteer(ctx iris.Context) {
 		EventDescription string
 		EventLocation    string
 		NumOfVolunteers  int
+		Duration         int64
 	}
 
 	type ReturnVolunteer struct {
+		ID        uint
 		Username  string
 		Bio       string
 		Email     string
@@ -60,6 +62,7 @@ func ShowVolunteer(ctx iris.Context) {
 	}
 
 	returnVolunteer := ReturnVolunteer{
+		ID:        volunteer.ID,
 		Username:  volunteer.Username,
 		Bio:       volunteer.Bio,
 		Email:     volunteer.Email,
@@ -72,7 +75,7 @@ func ShowVolunteer(ctx iris.Context) {
 		db.First(&eventInfo, shift.EventID)
 		var npoInfo types.NPO
 		db.First(&npoInfo, eventInfo.NPOID)
-		fmt.Print(npoInfo)
+		duration := (shift.ActualEndTime - shift.ActualStartTime) / 60000
 		returnShift := ReturnShift{
 			ID:               shift.ID,
 			CreatedAt:        shift.CreatedAt,
@@ -87,6 +90,7 @@ func ShowVolunteer(ctx iris.Context) {
 			EventDescription: eventInfo.Description,
 			EventLocation:    eventInfo.Location,
 			NumOfVolunteers:  eventInfo.NumOfVolunteers,
+			Duration:         duration,
 		}
 		returnVolunteer.Shifts = append(returnVolunteer.Shifts, returnShift)
 	}
