@@ -55,12 +55,12 @@ func GetOpenEvents(ctx iris.Context) {
 		ID              uint
 		CreatedAt       time.Time
 		UpdatedAt       time.Time
-		NPOID           int
+		NPOID           uint
 		NPOName         string
 		Name            string
 		StartTime       int64
 		EndTime         int64
-		Tags            string
+		Tags            []types.Tag
 		Description     string
 		Location        string
 		NumOfVolunteers int
@@ -87,11 +87,13 @@ func GetOpenEvents(ctx iris.Context) {
 				Name:            event.Name,
 				StartTime:       event.StartTime,
 				EndTime:         event.EndTime,
-				Tags:            event.Tags,
 				Description:     event.Description,
 				Location:        event.Location,
 				NumOfVolunteers: event.NumOfVolunteers,
 			}
+
+			db.Model(&event).Related(&event.Tags)
+
 			openEvents = append(openEvents, returnEvent)
 		}
 	}
@@ -105,7 +107,19 @@ func CreateEvent(ctx iris.Context) {
 
 	defer db.Close()
 
-	var requestBody types.Event
+	type RequestEvent struct {
+		NPOID           uint
+		Name            string
+		StartTime       int64
+		EndTime         int64
+		Tags            []string
+		Description     string
+		Location        string
+		NumOfVolunteers int
+		Shifts          []types.Shift
+	}
+
+	var requestBody RequestEvent
 
 	ctx.ReadJSON(&requestBody)
 
@@ -114,7 +128,6 @@ func CreateEvent(ctx iris.Context) {
 		Name:            requestBody.Name,
 		StartTime:       requestBody.StartTime,
 		EndTime:         requestBody.EndTime,
-		Tags:            requestBody.Tags,
 		Description:     requestBody.Description,
 		Location:        requestBody.Location,
 		NumOfVolunteers: requestBody.NumOfVolunteers,
@@ -133,11 +146,27 @@ func CreateEvent(ctx iris.Context) {
 		db.Create(&shift)
 	}
 
+	var eventTags []types.Tag
+	for _, newTag := range requestBody.Tags {
+
+		tag := types.Tag{
+			TagName: newTag,
+		}
+		//Only create a new tag if the tag doesn't already exist
+		db.FirstOrCreate(&tag, types.Tag{
+			TagName: newTag,
+			EventID: event.ID,
+		})
+		eventTags = append(eventTags, tag)
+	}
+
 	var newEvent types.Event
 
 	db.First(&newEvent, event.ID)
 
-	db.Model(&event).Related(&newEvent.Shifts)
+	db.Model(&newEvent).Related(&newEvent.Shifts)
+
+	newEvent.Tags = eventTags
 
 	ctx.JSON(newEvent)
 }

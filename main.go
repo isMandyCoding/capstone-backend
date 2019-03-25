@@ -46,7 +46,7 @@ func main() {
 
 	db, _ := databaseConfig.DbStart()
 
-	db.AutoMigrate(&types.NPO{}, &types.Volunteer{}, &types.Event{}, &types.Shift{})
+	db.AutoMigrate(&types.NPO{}, &types.Volunteer{}, &types.Event{}, &types.Shift{}, &types.Tag{})
 
 	fmt.Println("Works")
 
@@ -76,6 +76,12 @@ func main() {
 	app.Put("/api/shifts/{shiftid:int}", controllers.VolunteerSignup)
 	app.Put("/api/shifts/cancel/{shiftid:int}", controllers.VolunteerCancel)
 	app.Get("/api/shifts/volunteers/{id:int}", controllers.GetVolunteerShifts)
+
+	//Tags Routes
+	app.Get("/api/tags", controllers.GetAllTags)
+	app.Get("/api/tags/list", controllers.GetTagList)
+	app.Post("/api/tags", controllers.CreateTags)
+	app.Delete("/api/tags", controllers.DeleteTags)
 
 	app.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
 }

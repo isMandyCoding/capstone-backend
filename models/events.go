@@ -6,11 +6,11 @@ import (
 
 type Event struct {
 	gorm.Model
-	NPOID           int
+	NPOID           uint
 	Name            string `gorm:"type:varchar(255)"`
 	StartTime       int64
 	EndTime         int64
-	Tags            string `gorm:"type:varchar(255)"`
+	Tags            []Tag
 	Description     string `gorm:"type:varchar(1000)"`
 	Location        string `gorm:"type:varchar(255)"`
 	NumOfVolunteers int    `gorm:"type:integer"`
