@@ -6,6 +6,6 @@ import (
 
 type Tag struct {
 	gorm.Model
-	EventID uint
 	TagName string
+	Events  []*Event `gorm:"many2many:user_languages;"`
 }

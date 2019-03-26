@@ -17,7 +17,7 @@ func GetAllEvents(ctx iris.Context) {
 
 	var events []types.Event
 
-	db.Find(&events)
+	db.Preload("tags").Find(&events)
 
 	ctx.JSON(events)
 }
@@ -49,7 +49,7 @@ func GetOpenEvents(ctx iris.Context) {
 	//Find events that haven't already started.
 	now := time.Now().Unix()
 
-	db.Table("events").Where("start_time > ?", now).Select("id, created_at, updated_at, deleted_at, npo_id, name, start_time, end_time, tags, description, location, num_of_volunteers").Find(&events)
+	db.Table("events").Where("start_time > ?", now).Select("id, created_at, updated_at, deleted_at, npo_id, name, start_time, end_time, description, location, num_of_volunteers").Find(&events)
 
 	type ReturnEvent struct {
 		ID              uint
@@ -91,8 +91,11 @@ func GetOpenEvents(ctx iris.Context) {
 				Location:        event.Location,
 				NumOfVolunteers: event.NumOfVolunteers,
 			}
+			var tags []types.Tag
 
-			db.Model(&event).Related(&event.Tags)
+			db.Table("tags").Joins("inner join event_tags on event_tags.tag_id = tags.id").Joins("inner join events on event_tags.event_id = events.id").Where("events.id = ?", event.ID).Find(&tags)
+
+			returnEvent.Tags = tags
 
 			openEvents = append(openEvents, returnEvent)
 		}
@@ -155,8 +158,18 @@ func CreateEvent(ctx iris.Context) {
 		//Only create a new tag if the tag doesn't already exist
 		db.FirstOrCreate(&tag, types.Tag{
 			TagName: newTag,
-			EventID: event.ID,
 		})
+
+		type EventTag struct {
+			EventID uint
+			TagID   uint
+		}
+		newTag := EventTag{
+			EventID: event.ID,
+			TagID:   tag.ID,
+		}
+		db.NewRecord(newTag)
+		db.Create(&newTag)
 		eventTags = append(eventTags, tag)
 	}
 
@@ -166,9 +179,37 @@ func CreateEvent(ctx iris.Context) {
 
 	db.Model(&newEvent).Related(&newEvent.Shifts)
 
-	newEvent.Tags = eventTags
+	type ReturnEvent struct {
+		ID              uint
+		CreatedAt       time.Time
+		UpdatedAt       time.Time
+		NPOID           uint
+		Name            string
+		StartTime       int64
+		EndTime         int64
+		Tags            []types.Tag
+		Description     string
+		Location        string
+		NumOfVolunteers int
+		Shifts          []types.Shift
+	}
 
-	ctx.JSON(newEvent)
+	returnEvent := ReturnEvent{
+		ID:              newEvent.ID,
+		CreatedAt:       newEvent.CreatedAt,
+		UpdatedAt:       newEvent.UpdatedAt,
+		NPOID:           newEvent.NPOID,
+		Name:            newEvent.Name,
+		StartTime:       newEvent.StartTime,
+		EndTime:         newEvent.EndTime,
+		Tags:            eventTags,
+		Description:     newEvent.Description,
+		Location:        newEvent.Location,
+		NumOfVolunteers: newEvent.NumOfVolunteers,
+		Shifts:          newEvent.Shifts,
+	}
+
+	ctx.JSON(returnEvent)
 }
 
 func UpdateEvent(ctx iris.Context) {
