@@ -170,6 +170,7 @@ func ShowNPO(ctx iris.Context) {
 	}
 
 	type ReturnNPO struct {
+		ID          uint
 		NPOName     string
 		Description string
 		Website     string
@@ -180,6 +181,7 @@ func ShowNPO(ctx iris.Context) {
 	}
 
 	returnNPO := ReturnNPO{
+		ID:          npo.ID,
 		NPOName:     npo.NPOName,
 		Description: npo.Description,
 		Website:     npo.Website,
@@ -213,7 +215,6 @@ func ShowNPO(ctx iris.Context) {
 			Description:     event.Description,
 			Location:        event.Location,
 			NumOfVolunteers: event.NumOfVolunteers,
-			Shifts:          event.Shifts,
 			Tags:            tags,
 		}
 
