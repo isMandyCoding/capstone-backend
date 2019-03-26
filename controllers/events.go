@@ -53,6 +53,7 @@ func ShowEvent(ctx iris.Context) {
 		Description     string
 		Location        string
 		NumOfVolunteers int
+		Shifts          []types.Shift
 	}
 
 	var npoInfo types.NPO
@@ -70,6 +71,7 @@ func ShowEvent(ctx iris.Context) {
 		Description:     event.Description,
 		Location:        event.Location,
 		NumOfVolunteers: event.NumOfVolunteers,
+		Shifts:          event.Shifts,
 	}
 
 	returnEvent.Tags = tags
