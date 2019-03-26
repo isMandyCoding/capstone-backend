@@ -36,7 +36,45 @@ func ShowEvent(ctx iris.Context) {
 
 	db.Model(&event).Related(&event.Shifts)
 
-	ctx.JSON(event)
+	var tags []types.Tag
+
+	db.Table("tags").Joins("inner join event_tags on event_tags.tag_id = tags.id").Joins("inner join events on event_tags.event_id = events.id").Where("events.id = ?", event.ID).Find(&tags)
+
+	type ReturnEvent struct {
+		ID              uint
+		CreatedAt       time.Time
+		UpdatedAt       time.Time
+		NPOID           uint
+		NPOName         string
+		Name            string
+		StartTime       int64
+		EndTime         int64
+		Tags            []types.Tag
+		Description     string
+		Location        string
+		NumOfVolunteers int
+	}
+
+	var npoInfo types.NPO
+	db.Select("npo_name").First(&npoInfo, event.NPOID)
+
+	returnEvent := ReturnEvent{
+		ID:              event.ID,
+		CreatedAt:       event.CreatedAt,
+		UpdatedAt:       event.UpdatedAt,
+		NPOID:           event.NPOID,
+		NPOName:         npoInfo.NPOName,
+		Name:            event.Name,
+		StartTime:       event.StartTime,
+		EndTime:         event.EndTime,
+		Description:     event.Description,
+		Location:        event.Location,
+		NumOfVolunteers: event.NumOfVolunteers,
+	}
+
+	returnEvent.Tags = tags
+
+	ctx.JSON(returnEvent)
 }
 
 func GetOpenEvents(ctx iris.Context) {
