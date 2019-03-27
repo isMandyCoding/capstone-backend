@@ -190,7 +190,7 @@ func ShowNPO(ctx iris.Context) {
 		LastName:    npo.LastName,
 	}
 
-	db.Model(&npo).Related(&npo.Events)
+	db.Model(&npo).Order("events.start_time asc").Related(&npo.Events)
 
 	var returnEvents []ReturnEvent
 

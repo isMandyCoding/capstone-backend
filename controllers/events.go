@@ -87,9 +87,9 @@ func GetOpenEvents(ctx iris.Context) {
 	var events []types.Event
 
 	//Find events that haven't already started.
-	now := time.Now().Unix()
+	now := time.Now().Unix() * 1000
 
-	db.Table("events").Where("start_time > ?", now).Select("id, created_at, updated_at, deleted_at, npo_id, name, start_time, end_time, description, location, num_of_volunteers").Find(&events)
+	db.Table("events").Where("start_time > ?", now).Select("id, created_at, updated_at, deleted_at, npo_id, name, start_time, end_time, description, location, num_of_volunteers").Order("events.start_time asc").Find(&events)
 
 	type ReturnEvent struct {
 		ID              uint
@@ -104,20 +104,21 @@ func GetOpenEvents(ctx iris.Context) {
 		Description     string
 		Location        string
 		NumOfVolunteers int
+		Duration        int64
 	}
 
 	var openEvents []ReturnEvent
 
 	//look for only events that that still have open shifts to fill
 	for _, event := range events {
-
+		fmt.Println("start time %v now %v", event.StartTime, now)
 		var filledShifts []types.Shift
 		db.Table("shifts").Where("event_id = ?", event.ID).Not("volunteer_id", 0).Find(&filledShifts)
 
 		if len(filledShifts) != event.NumOfVolunteers {
 			var npoInfo types.NPO
 			db.Select("npo_name").First(&npoInfo, event.NPOID)
-
+			duration := (event.EndTime - event.StartTime) / 6000
 			returnEvent := ReturnEvent{
 				ID:              event.ID,
 				CreatedAt:       event.CreatedAt,
@@ -130,6 +131,7 @@ func GetOpenEvents(ctx iris.Context) {
 				Description:     event.Description,
 				Location:        event.Location,
 				NumOfVolunteers: event.NumOfVolunteers,
+				Duration:        duration,
 			}
 			var tags []types.Tag
 
