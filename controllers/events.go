@@ -226,6 +226,7 @@ func CreateEvent(ctx iris.Context) {
 		CreatedAt       time.Time
 		UpdatedAt       time.Time
 		NPOID           uint
+		NPOName         string
 		Name            string
 		StartTime       int64
 		EndTime         int64
@@ -236,11 +237,15 @@ func CreateEvent(ctx iris.Context) {
 		Shifts          []types.Shift
 	}
 
+	var npoInfo types.NPO
+	db.First(&npoInfo)
+
 	returnEvent := ReturnEvent{
 		ID:              newEvent.ID,
 		CreatedAt:       newEvent.CreatedAt,
 		UpdatedAt:       newEvent.UpdatedAt,
 		NPOID:           newEvent.NPOID,
+		NPOName:         npoInfo.NPOName,
 		Name:            newEvent.Name,
 		StartTime:       newEvent.StartTime,
 		EndTime:         newEvent.EndTime,
