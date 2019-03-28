@@ -24,6 +24,7 @@ func main() {
 	app.WrapRouter(cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedHeaders:   []string{"*"},
+		AllowedMethods:   []string{"PATCH", "POST", "GET", "DELETE"},
 		AllowCredentials: true,
 	}).ServeHTTP)
 
@@ -55,14 +56,14 @@ func main() {
 	// app.Get("apis/npos/volunteers/hours", controllers.GetVolunteerHours)
 	app.Get("/api/npo/{id:int}", controllers.ShowNPO)
 	app.Post("api/npos", controllers.CreateNPO)
-	app.Put("/api/npos/{id:int}", controllers.UpdateNPO)
+	app.Patch("/api/npos/{id:int}", controllers.UpdateNPO)
 	app.Delete("api/npos/{id:int}", controllers.DeleteNPO)
 
 	//Volunteers Routes:
 	app.Get("/api/volunteers", controllers.GetAllVolunteers)
 	app.Get("/api/volunteer/{id:int}", controllers.ShowVolunteer)
 	app.Post("/api/volunteers", controllers.CreateVolunteer)
-	app.Put("/api/volunteers/{id:int}", controllers.UpdateVolunteer)
+	app.Patch("/api/volunteers/{id:int}", controllers.UpdateVolunteer)
 	app.Delete("/api/volunteers/{id:int}", controllers.DeleteVolunteer)
 
 	//Events Routes:
@@ -70,11 +71,11 @@ func main() {
 	app.Get("/api/events/{id:int}", controllers.ShowEvent)
 	app.Get("/api/open/events", controllers.GetOpenEvents)
 	app.Post("/api/events", controllers.CreateEvent)
-	app.Put("/api/events/{id:int}", controllers.UpdateEvent)
+	app.Patch("/api/events/{id:int}", controllers.UpdateEvent)
 
 	//Shifts Routes
-	app.Put("/api/shifts/{shiftid:int}", controllers.VolunteerSignup)
-	app.Put("/api/shifts/cancel/{shiftid:int}", controllers.VolunteerCancel)
+	app.Patch("/api/shifts/{shiftid:int}", controllers.VolunteerSignup)
+	app.Patch("/api/cancel/shifts/{shiftid:int}", controllers.VolunteerCancel)
 	app.Get("/api/shifts/volunteers/{id:int}", controllers.GetVolunteerShifts)
 
 	//Tags Routes

@@ -71,17 +71,26 @@ func VolunteerCancel(ctx iris.Context) {
 	}
 
 	defer db.Close()
+
+	var requestBody types.Shift
+
+	ctx.ReadJSON(&requestBody)
+
 	var shift types.Shift
 	urlParam, _ := ctx.Params().GetInt("shiftid")
 	db.First(&shift, urlParam)
 
 	//double check to make sure the correct volunteer is being removed
-	if int(shift.VolunteerID) == urlParam {
+	fmt.Println("the shift Volunteer ID %v is equal to the requestBody VOlunteer ID %v: ", shift.VolunteerID, requestBody.VolunteerID)
+	if shift.VolunteerID == requestBody.VolunteerID {
 
 		shift.VolunteerID = 0
 		db.Save(&shift)
 
 		ctx.JSON(shift)
+	} else {
+		ctx.Values().Set("message", "Unable to update shift as requested. Please try again.")
+		ctx.StatusCode(500)
 	}
 
 }
