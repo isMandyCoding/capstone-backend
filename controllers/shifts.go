@@ -12,7 +12,7 @@ func VolunteerSignup(ctx iris.Context) {
 	db, err := databaseConfig.DbStart()
 
 	if err != nil {
-		ctx.Values().Set("message", "Unable to update shift as requested. Please try again.")
+		ctx.Values().Set("message", "There was an error connecting to the database. Please try again.")
 		ctx.StatusCode(500)
 	}
 
@@ -20,7 +20,10 @@ func VolunteerSignup(ctx iris.Context) {
 	var shift types.Shift
 	urlParam, _ := ctx.Params().GetInt("shiftid")
 	db.First(&shift, urlParam)
-
+	if db.First(&shift, urlParam).RecordNotFound() {
+		ctx.Values().Set("message", "Unable to locate the shift to update as requested.")
+		ctx.StatusCode(500)
+	}
 	fmt.Print(shift)
 
 	type ShiftVolunteer struct {

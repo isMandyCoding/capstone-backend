@@ -9,6 +9,33 @@ import (
 	types "github.com/theycallmethetailor/capstone-backend/models"
 )
 
+type ReturnShift struct {
+	ID               uint
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	VolunteerID      uint
+	EventID          uint
+	WasWorked        bool
+	ActualStartTime  int64
+	ActualEndTime    int64
+	NPOName          string
+	EventName        string
+	EventDescription string
+	EventLocation    string
+	NumOfVolunteers  int
+	Duration         int64
+}
+
+type ReturnVolunteer struct {
+	ID        uint
+	Username  string
+	Bio       string
+	Email     string
+	FirstName string
+	LastName  string
+	Shifts    []ReturnShift
+}
+
 func GetAllVolunteers(ctx iris.Context) {
 	db, _ := databaseConfig.DbStart()
 
@@ -33,33 +60,6 @@ func ShowVolunteer(ctx iris.Context) {
 	db.First(&volunteer, urlParam)
 
 	db.Model(&volunteer).Related(&volunteer.Shifts)
-
-	type ReturnShift struct {
-		ID               uint
-		CreatedAt        time.Time
-		UpdatedAt        time.Time
-		VolunteerID      uint
-		EventID          uint
-		WasWorked        bool
-		ActualStartTime  int64
-		ActualEndTime    int64
-		NPOName          string
-		EventName        string
-		EventDescription string
-		EventLocation    string
-		NumOfVolunteers  int
-		Duration         int64
-	}
-
-	type ReturnVolunteer struct {
-		ID        uint
-		Username  string
-		Bio       string
-		Email     string
-		FirstName string
-		LastName  string
-		Shifts    []ReturnShift
-	}
 
 	returnVolunteer := ReturnVolunteer{
 		ID:        volunteer.ID,

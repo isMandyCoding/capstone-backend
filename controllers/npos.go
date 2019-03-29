@@ -8,6 +8,33 @@ import (
 	types "github.com/theycallmethetailor/capstone-backend/models"
 )
 
+type ReturnEvent struct {
+	ID              uint
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	NPOID           uint
+	NPOName         string
+	Name            string
+	StartTime       int64
+	EndTime         int64
+	Tags            []types.Tag
+	Description     string
+	Location        string
+	NumOfVolunteers int
+	Shifts          []types.Shift
+}
+
+type ReturnNPO struct {
+	ID          uint
+	NPOName     string
+	Description string
+	Website     string
+	Email       string
+	FirstName   string
+	LastName    string
+	Events      []ReturnEvent
+}
+
 func GetAllNPOs(ctx iris.Context) {
 	// Create connection to database
 	db, _ := databaseConfig.DbStart()
@@ -43,33 +70,6 @@ func ShowNPO(ctx iris.Context) {
 	if npo.ID == 0 {
 		ctx.Values().Set("message", "Unable to locate NPO with the provided ID.")
 		ctx.StatusCode(500)
-	}
-
-	type ReturnEvent struct {
-		ID              uint
-		CreatedAt       time.Time
-		UpdatedAt       time.Time
-		NPOID           uint
-		NPOName         string
-		Name            string
-		StartTime       int64
-		EndTime         int64
-		Tags            []types.Tag
-		Description     string
-		Location        string
-		NumOfVolunteers int
-		Shifts          []types.Shift
-	}
-
-	type ReturnNPO struct {
-		ID          uint
-		NPOName     string
-		Description string
-		Website     string
-		Email       string
-		FirstName   string
-		LastName    string
-		Events      []ReturnEvent
 	}
 
 	returnNPO := ReturnNPO{

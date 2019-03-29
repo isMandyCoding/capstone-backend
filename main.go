@@ -84,5 +84,8 @@ func main() {
 	app.Post("/api/tags", controllers.CreateTags)
 	app.Delete("/api/tags", controllers.DeleteTags)
 
+	//Login route
+	app.Post("/api/login", controllers.Login)
+
 	app.Run(iris.Addr(":8081"), iris.WithoutServerError(iris.ErrServerClosed))
 }
