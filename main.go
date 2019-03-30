@@ -68,7 +68,7 @@ func main() {
 
 	//Events Routes:
 	app.Get("/api/events", controllers.GetAllEvents)
-	app.Get("/api/events/{id:int}", controllers.ShowEvent)
+	app.Get("/api/event/{id:int}", controllers.ShowEvent)
 	app.Get("/api/open/events", controllers.GetOpenEvents)
 	app.Post("/api/events", controllers.CreateEvent)
 	app.Patch("/api/events/{id:int}", controllers.UpdateEvent)

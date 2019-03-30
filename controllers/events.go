@@ -301,6 +301,26 @@ func UpdateEvent(ctx iris.Context) {
 			Location:    requestBody.Location,
 		})
 
+		if event.NumOfVolunteers < requestBody.NumOfVolunteers {
+
+			additionalVolunteers := requestBody.NumOfVolunteers - event.NumOfVolunteers
+			//add new shifts
+			for i := 0; i < additionalVolunteers; i++ {
+				shift := types.Shift{
+					EventID:         event.ID,
+					ActualStartTime: event.StartTime,
+					ActualEndTime:   event.EndTime,
+				}
+				db.NewRecord(shift)
+				db.Create(&shift)
+			}
+
+			//update NumOfVolunteers
+			db.Model(&event).Updates(types.Event{
+				NumOfVolunteers: requestBody.NumOfVolunteers,
+			})
+		}
+
 		var newEvent types.Event
 
 		db.First(&newEvent, event.ID)
@@ -319,6 +339,26 @@ func UpdateEvent(ctx iris.Context) {
 			Description: requestBody.Description,
 			Location:    requestBody.Location,
 		})
+
+		if event.NumOfVolunteers < requestBody.NumOfVolunteers {
+
+			additionalVolunteers := requestBody.NumOfVolunteers - event.NumOfVolunteers
+			//add new shifts
+			for i := 0; i < additionalVolunteers; i++ {
+				shift := types.Shift{
+					EventID:         event.ID,
+					ActualStartTime: event.StartTime,
+					ActualEndTime:   event.EndTime,
+				}
+				db.NewRecord(shift)
+				db.Create(&shift)
+			}
+
+			//update NumOfVolunteers
+			db.Model(&event).Updates(types.Event{
+				NumOfVolunteers: requestBody.NumOfVolunteers,
+			})
+		}
 
 		var newEvent types.Event
 
