@@ -396,17 +396,18 @@ type EventTag struct {
 }
 
 func DeleteEventTags(event types.Event, db *gorm.DB) {
-	var tags []types.Tag
+	var tagsToDelete []types.Tag
 
-	db.Table("tags").Joins("inner join event_tags on event_tags.tag_id = tags.id").Joins("inner join events on event_tags.event_id = events.id").Where("events.id = ?", event.ID).Find(&tags)
-
-	//delete all tags tied to event
-	for _, tag := range tags {
+	db.Table("tags").Joins("inner join event_tags on event_tags.tag_id = tags.id").Joins("inner join events on event_tags.event_id = events.id").Where("events.id = ?", event.ID).Find(&tagsToDelete)
+	// //delete all tags tied to event
+	for _, tag := range tagsToDelete {
 
 		var eventTagToDelete EventTag
-		db.Table("event_tags").Where("event_tags.tag_id = ? AND event_tags.event_id = ?", tag.ID, event.ID).First(&eventTagToDelete)
+		db.Table("event_tags").Where("event_tags.tag_id = ? AND event_tags.event_id = ?", tag.ID, event.ID).First(&eventTagToDelete).RecordNotFound()
 
-		db.Unscoped().Delete(&eventTagToDelete)
+		if !db.Table("event_tags").Where("event_tags.tag_id = ? AND event_tags.event_id = ?", tag.ID, event.ID).First(&eventTagToDelete).RecordNotFound() {
+			db.Delete(&eventTagToDelete)
+		}
 
 	}
 

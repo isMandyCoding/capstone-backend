@@ -84,6 +84,9 @@ func main() {
 	app.Post("/api/tags", controllers.CreateTags)
 	app.Delete("/api/tags", controllers.DeleteTags)
 
+	//Reporting Routes
+	app.Post("/api/vol/report", controllers.GetVolunteerHours)
+
 	//Login route
 	app.Post("/api/login", controllers.Login)
 
