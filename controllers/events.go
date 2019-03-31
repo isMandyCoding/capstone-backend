@@ -1,8 +1,9 @@
 package controllers
 
 import (
-	"fmt"
 	"time"
+
+	"github.com/jinzhu/gorm"
 
 	"github.com/kataras/iris"
 	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
@@ -111,7 +112,6 @@ func GetOpenEvents(ctx iris.Context) {
 
 	//look for only events that that still have open shifts to fill
 	for _, event := range events {
-		fmt.Println("start time %v now %v", event.StartTime, now)
 		var filledShifts []types.Shift
 		db.Table("shifts").Where("event_id = ?", event.ID).Not("volunteer_id", 0).Find(&filledShifts)
 
@@ -202,10 +202,6 @@ func CreateEvent(ctx iris.Context) {
 			TagName: newTag,
 		})
 
-		type EventTag struct {
-			EventID uint
-			TagID   uint
-		}
 		newTag := EventTag{
 			EventID: event.ID,
 			TagID:   tag.ID,
@@ -271,7 +267,19 @@ func UpdateEvent(ctx iris.Context) {
 
 	db.First(&event, urlParam)
 
-	var requestBody types.Event
+	type UpdatedEvent struct {
+		ID              uint
+		NPOID           uint
+		Name            string
+		StartTime       int64
+		EndTime         int64
+		Tags            []string
+		Description     string
+		Location        string
+		NumOfVolunteers int
+	}
+
+	var requestBody UpdatedEvent
 
 	ctx.ReadJSON(&requestBody)
 
@@ -282,7 +290,6 @@ func UpdateEvent(ctx iris.Context) {
 
 		// if the NPO changes the start time and the event hasn't started, also change the start time for all shifts
 		if requestBody.StartTime != event.StartTime {
-			fmt.Print("The request start time is not equal to the event start time")
 			db.Table("shifts").Where("event_id = ?", event.ID).Updates(map[string]interface{}{"actual_start_time": requestBody.StartTime})
 		}
 
@@ -296,7 +303,6 @@ func UpdateEvent(ctx iris.Context) {
 			Name:        requestBody.Name,
 			StartTime:   requestBody.StartTime,
 			EndTime:     requestBody.EndTime,
-			Tags:        requestBody.Tags,
 			Description: requestBody.Description,
 			Location:    requestBody.Location,
 		})
@@ -321,12 +327,17 @@ func UpdateEvent(ctx iris.Context) {
 			})
 		}
 
+		DeleteEventTags(event, db)
+
 		var newEvent types.Event
 
 		db.First(&newEvent, event.ID)
 
-		db.Model(&event).Related(&newEvent.Shifts)
+		db.Model(&newEvent).Related(&newEvent.Shifts)
 
+		newEventTags := AddEventTags(event, requestBody.Tags, db)
+
+		newEvent.Tags = newEventTags
 		ctx.JSON(newEvent)
 
 	} else if event.StartTime == requestBody.StartTime && event.EndTime == requestBody.EndTime {
@@ -335,7 +346,6 @@ func UpdateEvent(ctx iris.Context) {
 			Name:        requestBody.Name,
 			StartTime:   requestBody.StartTime,
 			EndTime:     requestBody.EndTime,
-			Tags:        requestBody.Tags,
 			Description: requestBody.Description,
 			Location:    requestBody.Location,
 		})
@@ -360,16 +370,68 @@ func UpdateEvent(ctx iris.Context) {
 			})
 		}
 
+		DeleteEventTags(event, db)
+
 		var newEvent types.Event
 
 		db.First(&newEvent, event.ID)
 
-		db.Model(&event).Related(&newEvent.Shifts)
+		db.Model(&newEvent).Related(&newEvent.Shifts)
+
+		newEventTags := AddEventTags(event, requestBody.Tags, db)
+
+		newEvent.Tags = newEventTags
 
 		ctx.JSON(newEvent)
 	} else {
 		ctx.Values().Set("message", "Unable to alter start or end times once an event has already started.")
 		ctx.StatusCode(500)
 	}
+
+}
+
+type EventTag struct {
+	EventID uint
+	TagID   uint
+}
+
+func DeleteEventTags(event types.Event, db *gorm.DB) {
+	var tags []types.Tag
+
+	db.Table("tags").Joins("inner join event_tags on event_tags.tag_id = tags.id").Joins("inner join events on event_tags.event_id = events.id").Where("events.id = ?", event.ID).Find(&tags)
+
+	//delete all tags tied to event
+	for _, tag := range tags {
+
+		var eventTagToDelete EventTag
+		db.Table("event_tags").Where("event_tags.tag_id = ? AND event_tags.event_id = ?", tag.ID, event.ID).First(&eventTagToDelete)
+
+		db.Unscoped().Delete(&eventTagToDelete)
+
+	}
+
+}
+
+func AddEventTags(event types.Event, tagNames []string, db *gorm.DB) []*types.Tag {
+
+	var eventTags []*types.Tag
+	for _, newTag := range tagNames {
+
+		var tag types.Tag
+		//Only create a new tag if the tag doesn't already exist
+		db.FirstOrCreate(&tag, types.Tag{
+			TagName: newTag,
+		})
+
+		newTag := EventTag{
+			EventID: event.ID,
+			TagID:   tag.ID,
+		}
+		db.NewRecord(newTag)
+		db.Create(&newTag)
+		eventTags = append(eventTags, &tag)
+	}
+
+	return eventTags
 
 }
