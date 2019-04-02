@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/kataras/iris"
-	databaseConfig "github.com/theycallmethetailor/capstone-backend/src/config"
-	types "github.com/theycallmethetailor/capstone-backend/src/models"
+	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
+	types "github.com/theycallmethetailor/capstone-backend/models"
 )
 
 func VolunteerSignup(ctx iris.Context) {
