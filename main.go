@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/rs/cors"
 
 	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
@@ -49,8 +47,6 @@ func main() {
 
 	db.AutoMigrate(&types.NPO{}, &types.Volunteer{}, &types.Event{}, &types.Shift{}, &types.Tag{})
 
-	fmt.Println("Works")
-
 	// NPO Routes:
 	app.Get("/api/npos", controllers.GetAllNPOs)
 	app.Get("/api/npo/{id:int}", controllers.ShowNPO)
@@ -77,6 +73,7 @@ func main() {
 	app.Patch("/api/shifts/{shiftid:int}", controllers.VolunteerSignup)
 	app.Patch("/api/cancel/shifts/{shiftid:int}", controllers.VolunteerCancel)
 	app.Get("/api/shifts/volunteers/{id:int}", controllers.GetVolunteerShifts)
+	app.Patch("/api/confirm/shifts/{shiftid:int}", controllers.ConfirmShiftWorked)
 
 	//Tags Routes
 	app.Get("/api/tags", controllers.GetAllTags)

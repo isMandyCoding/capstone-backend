@@ -31,8 +31,8 @@ func VolunteerSignup(ctx iris.Context) {
 	}
 	var shiftVol ShiftVolunteer
 	ctx.ReadJSON(&shiftVol)
-	//check to make sure volunteer hasn't already signed up for a shift for the same event
 
+	//check to make sure volunteer hasn't already signed up for a shift for the same event
 	var checkShift []types.Shift
 	signup := db.Find(&checkShift, "event_id = ? AND volunteer_id = ?", shift.EventID, shiftVol.VolunteerID)
 
@@ -88,6 +88,39 @@ func VolunteerCancel(ctx iris.Context) {
 	if shift.VolunteerID == requestBody.VolunteerID {
 
 		shift.VolunteerID = 0
+		db.Save(&shift)
+
+		ctx.JSON(shift)
+	} else {
+		ctx.Values().Set("message", "Unable to update shift as requested. Please try again.")
+		ctx.StatusCode(500)
+	}
+
+}
+
+func ConfirmShiftWorked(ctx iris.Context) {
+	db, err := databaseConfig.DbStart()
+
+	defer db.Close()
+
+	if err != nil {
+		ctx.Values().Set("message", "Unable to update shift as requested. Please try again.")
+		ctx.StatusCode(500)
+	}
+
+	defer db.Close()
+
+	var requestBody types.Shift
+
+	ctx.ReadJSON(&requestBody)
+
+	var shift types.Shift
+	urlParam, _ := ctx.Params().GetInt("shiftid")
+	db.First(&shift, urlParam)
+
+	if shift.VolunteerID == requestBody.VolunteerID {
+
+		shift.WasWorked = true
 		db.Save(&shift)
 
 		ctx.JSON(shift)
