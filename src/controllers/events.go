@@ -7,8 +7,8 @@ import (
 	"github.com/jinzhu/gorm"
 
 	"github.com/kataras/iris"
-	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
-	types "github.com/theycallmethetailor/capstone-backend/models"
+	databaseConfig "github.com/theycallmethetailor/capstone-backend/src/config"
+	types "github.com/theycallmethetailor/capstone-backend/src/models"
 )
 
 func GetAllEvents(ctx iris.Context) {
