@@ -67,6 +67,7 @@ func GetVolunteerHours(ctx iris.Context) {
 		//Get Event info
 		var eventInfo types.Event
 		db.First(&eventInfo, shift.EventID)
+		fmt.Println(eventInfo)
 
 		//Get shift hours
 		shiftMinutes := (shift.ActualEndTime - shift.ActualStartTime) / 60000
@@ -122,7 +123,6 @@ func GetVolunteerHours(ctx iris.Context) {
 		//Get Tags by event first
 		var eventTags []types.Tag
 		db.Table("tags").Joins("inner join event_tags on event_tags.tag_id = tags.id").Joins("inner join events on event_tags.event_id = events.id").Where("events.id = ?", eventInfo.ID).Find(&eventTags)
-		fmt.Println(eventTags)
 		for _, tag := range eventTags {
 			_, tagOK := hoursWorkedByTag[tag.ID]
 			if tagOK {

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -73,10 +74,8 @@ func ShowEvent(ctx iris.Context) {
 		Location:        event.Location,
 		NumOfVolunteers: event.NumOfVolunteers,
 		Shifts:          event.Shifts,
+		Tags:            tags,
 	}
-
-	returnEvent.Tags = tags
-
 	ctx.JSON(returnEvent)
 }
 
@@ -191,6 +190,11 @@ func CreateEvent(ctx iris.Context) {
 		db.Create(&shift)
 	}
 
+	type EventTag struct {
+		EventID uint
+		TagID   uint
+	}
+
 	var eventTags []types.Tag
 	for _, newTag := range requestBody.Tags {
 
@@ -202,6 +206,10 @@ func CreateEvent(ctx iris.Context) {
 			TagName: newTag,
 		})
 
+		type EventTag struct {
+			EventID uint
+			TagID   uint
+		}
 		newTag := EventTag{
 			EventID: event.ID,
 			TagID:   tag.ID,
@@ -211,6 +219,7 @@ func CreateEvent(ctx iris.Context) {
 		eventTags = append(eventTags, tag)
 	}
 
+	fmt.Println("eventTags: ", eventTags)
 	var newEvent types.Event
 
 	db.First(&newEvent, event.ID)
@@ -390,12 +399,38 @@ func UpdateEvent(ctx iris.Context) {
 
 }
 
-type EventTag struct {
-	EventID uint
-	TagID   uint
+func DeleteEvent(ctx iris.Context) {
+
+	db, _ := databaseConfig.DbStart()
+
+	defer db.Close()
+
+	var eventToDelete types.Event
+
+	urlParam, _ := ctx.Params().GetInt("id")
+
+	db.First(&eventToDelete, urlParam)
+
+	db.Model(&eventToDelete).Related(&eventToDelete.Shifts)
+
+	for _, shift := range eventToDelete.Shifts {
+		if !db.Table("shifts").Where("shifts.event_id = ?", eventToDelete.ID).First(&shift).RecordNotFound() {
+			db.Table("shifts").Where("shifts.event_id = ?", eventToDelete.ID).Delete(&shift)
+		}
+	}
+
+	DeleteEventTags(eventToDelete, db)
+
+	db.Table("events").Where("events.id = ?", eventToDelete.ID).Delete(&eventToDelete)
+
+	ctx.JSON(eventToDelete.ID)
 }
 
 func DeleteEventTags(event types.Event, db *gorm.DB) {
+	type EventTag struct {
+		EventID uint
+		TagID   uint
+	}
 	var tagsToDelete []types.Tag
 
 	db.Table("tags").Joins("inner join event_tags on event_tags.tag_id = tags.id").Joins("inner join events on event_tags.event_id = events.id").Where("events.id = ?", event.ID).Find(&tagsToDelete)
@@ -403,10 +438,11 @@ func DeleteEventTags(event types.Event, db *gorm.DB) {
 	for _, tag := range tagsToDelete {
 
 		var eventTagToDelete EventTag
-		db.Table("event_tags").Where("event_tags.tag_id = ? AND event_tags.event_id = ?", tag.ID, event.ID).First(&eventTagToDelete).RecordNotFound()
+		db.Table("event_tags").Where("event_tags.tag_id = ? AND event_tags.event_id = ?", tag.ID, event.ID).First(&eventTagToDelete)
 
 		if !db.Table("event_tags").Where("event_tags.tag_id = ? AND event_tags.event_id = ?", tag.ID, event.ID).First(&eventTagToDelete).RecordNotFound() {
-			db.Delete(&eventTagToDelete)
+			fmt.Println(eventTagToDelete)
+			db.Where("event_tags.tag_id = ? AND event_tags.event_id = ?", tag.ID, event.ID).Delete(&eventTagToDelete)
 		}
 
 	}
@@ -415,6 +451,10 @@ func DeleteEventTags(event types.Event, db *gorm.DB) {
 
 func AddEventTags(event types.Event, tagNames []string, db *gorm.DB) []*types.Tag {
 
+	type EventTag struct {
+		EventID uint
+		TagID   uint
+	}
 	var eventTags []*types.Tag
 	for _, newTag := range tagNames {
 
