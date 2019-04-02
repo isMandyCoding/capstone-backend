@@ -126,17 +126,18 @@ func GetVolunteerHours(ctx iris.Context) {
 		for _, tag := range eventTags {
 			_, tagOK := hoursWorkedByTag[tag.ID]
 			if tagOK {
-				hoursWorkedByTag[tag.ID] = HoursWorkedByTag{
-					TagID:       tag.ID,
-					TagName:     tag.TagName,
-					HoursWorked: shiftHours,
-				}
-			} else {
-				updatedShiftHours := hoursWorkedByTag[eventInfo.ID].HoursWorked + shiftHours
+				updatedShiftHours := hoursWorkedByTag[tag.ID].HoursWorked + shiftHours
 				hoursWorkedByTag[tag.ID] = HoursWorkedByTag{
 					TagID:       tag.ID,
 					TagName:     tag.TagName,
 					HoursWorked: updatedShiftHours,
+				}
+			} else {
+
+				hoursWorkedByTag[tag.ID] = HoursWorkedByTag{
+					TagID:       tag.ID,
+					TagName:     tag.TagName,
+					HoursWorked: shiftHours,
 				}
 			}
 
