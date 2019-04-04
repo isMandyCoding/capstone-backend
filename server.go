@@ -3,14 +3,14 @@ package main
 import (
 	"github.com/rs/cors"
 
-	databaseConfig "github.com/theycallmethetailor/capstone-backend//src/config"
+	databaseConfig "github.com/theycallmethetailor/capstone-backend/config"
 
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/middleware/logger"
 	"github.com/kataras/iris/middleware/recover"
-	controllers "github.com/theycallmethetailor/capstone-backend/src/controllers"
+	controllers "github.com/theycallmethetailor/capstone-backend/controllers"
 
-	types "github.com/theycallmethetailor/capstone-backend/src/models"
+	types "github.com/theycallmethetailor/capstone-backend/models"
 
 	_ "github.com/lib/pq"
 )
