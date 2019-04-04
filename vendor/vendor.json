@@ -13,7 +13,7 @@
 			"path": "github.com/kataras/iris",
 			"revision": "f00af59c0177908d9bf7b4cf97ef89b29bfd21b6",
 			"revisionTime": "2019-02-22T02:24:01Z"
-		},
+		}
 	],
 	"rootPath": "github.com/theycallmethetailor/capstone-backend"
 }
