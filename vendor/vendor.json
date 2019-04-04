@@ -14,30 +14,6 @@
 			"revision": "f00af59c0177908d9bf7b4cf97ef89b29bfd21b6",
 			"revisionTime": "2019-02-22T02:24:01Z"
 		},
-		{
-			"checksumSHA1": "zgBWURJMBW+e+hszW+LGlimcdbg=",
-			"path": "github.com/theycallmethetailor/capstone-backend",
-			"revision": "b551e2ffb64494a53c8c5640e9db84cb76cf3743",
-			"revisionTime": "2019-04-02T21:32:01Z"
-		},
-		{
-			"checksumSHA1": "deGIDtgKCVpA5Y4LduseC71VSr8=",
-			"path": "github.com/theycallmethetailor/capstone-backend/config",
-			"revision": "b551e2ffb64494a53c8c5640e9db84cb76cf3743",
-			"revisionTime": "2019-04-02T21:32:01Z"
-		},
-		{
-			"checksumSHA1": "5+RhIJqWP9sZ8AgoFaj3HKl475E=",
-			"path": "github.com/theycallmethetailor/capstone-backend/controllers",
-			"revision": "b551e2ffb64494a53c8c5640e9db84cb76cf3743",
-			"revisionTime": "2019-04-02T21:32:01Z"
-		},
-		{
-			"checksumSHA1": "kjQ3+2H8DbIEE4AB1v6LJmHL9To=",
-			"path": "github.com/theycallmethetailor/capstone-backend/models",
-			"revision": "b551e2ffb64494a53c8c5640e9db84cb76cf3743",
-			"revisionTime": "2019-04-02T21:32:01Z"
-		}
 	],
 	"rootPath": "github.com/theycallmethetailor/capstone-backend"
 }
