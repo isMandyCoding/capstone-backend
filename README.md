@@ -16,7 +16,7 @@ For my server/database, I used Go to build a RESTful API backed by a PostgreSQL 
 
 ## How to use this API: 
 
-  https://documenter.getpostman.com/view/6596508/S17owpTi
+  Coming soon...
 
 ## Frontend Code: 
 
